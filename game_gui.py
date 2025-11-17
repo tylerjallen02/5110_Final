@@ -51,3 +51,37 @@ def get_scaled_mouse_pos(canvas: pygame.Surface):
     """
     mouse_x, _ = pygame.mouse.get_pos()
     return (mouse_x / canvas.get_rect().centerx) - 1.0
+
+def countdown(screen, clock, round_num, duration=3):
+    """
+    Displays a `duration` second countdown on the screen. Also displays round number.
+
+    Args:
+      screen: game canvas
+      clock: clock used by main game
+      round_num: the round number to be displayed
+      duration: how many seconds the countdown should be
+    """
+    font = pygame.font.Font(None, 100)
+    for tick in range(duration, 0, -1):
+        
+        screen.fill((0, 0, 0)) # Black background for countdown
+        
+        # Display the large countdown number
+        count_text = font.render(str(tick), True, (255, 255, 255))
+        text_rect = count_text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+        screen.blit(count_text, text_rect)
+
+        round_text = font.render(f"Round {round_num}", True, (255, 255, 255))
+        center_x = screen.get_width() // 2
+        center_y = screen.get_height() // 2
+        
+        # 1. Draw the ROUND number text
+        round_text_rect = round_text.get_rect(center=(center_x, center_y - 100)) # 100 pixels above center
+        screen.blit(round_text, round_text_rect)
+        
+        # --- Update ---
+        pygame.display.flip()
+        # update once per second
+        clock.tick(1)
+        
