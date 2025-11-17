@@ -1,12 +1,15 @@
 import pygame
-import math
 from game_gui import draw_rect, get_scaled_mouse_pos, countdown
 from cost import get_human_cost
 
-def run_round(round_num):
+def run_round(round_num, duration):
     """
     Starts the main game loop, game will not exit until the program finishes, the window is closed
     or 'esc' is pressed
+
+    Args:
+      round_num: The round number to display between rounds
+      duration: length of the round in seconds
     """
     pygame.init()
     clock = pygame.time.Clock()
@@ -17,7 +20,8 @@ def run_round(round_num):
 
     FPS = 60
     countdown(canvas, clock, round_num)
-    while not exit:
+    # force the correct number of collection points, even if it runs slower
+    for frame in range(duration * 60):
         clock.tick(FPS)
         
         canvas.fill(BACKGROUND_COLOR)
@@ -25,10 +29,9 @@ def run_round(round_num):
         draw_rect(canvas, human_cost)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                exit = True
+                pygame.quit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                exit = True
+                pygame.quit()
         pygame.display.update()
 
     pygame.quit()
-
