@@ -58,6 +58,12 @@ def countdown(screen, clock, round_num, duration=3):
         screen.blit(round_text, round_text_rect)
         
         pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                pygame.quit()
         # update once per second
         clock.tick(1)
         

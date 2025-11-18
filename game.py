@@ -2,6 +2,15 @@ import pygame
 from game_gui import draw_rect, get_scaled_mouse_pos, countdown
 from cost import get_human_cost
 
+
+def run_game():
+    """
+    Runs all rounds of the game
+    """
+    # Round durations come from the paper
+    run_round(1, 40)
+    run_round(2, 20)
+    run_round(3, 20)
 def run_round(round_num, duration):
     """
     Starts the main game loop, game will not exit until the program finishes, the window is closed
