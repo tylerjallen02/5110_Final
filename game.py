@@ -11,6 +11,7 @@ def run_game():
     run_round(1, 40)
     run_round(2, 20)
     run_round(3, 20)
+    
 def run_round(round_num, duration):
     """
     Starts the main game loop, game will not exit until the program finishes, the window is closed
