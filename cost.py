@@ -16,4 +16,4 @@ def get_human_cost(human_input, machine_input):
     # negative results from teh human equation.
 
     # placeholder function to domonstrait mouse movement
-    return human_input + 1
+    return human_input + 2
