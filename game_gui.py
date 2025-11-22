@@ -1,3 +1,4 @@
+import sys
 import pygame
 import math
 def draw_rect(canvas, human_cost):
@@ -62,8 +63,10 @@ def countdown(screen, clock, round_num, duration=3):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pygame.quit()
+                sys.exit()
         # update once per second
         clock.tick(1)
         
