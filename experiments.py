@@ -21,8 +21,8 @@ def run_algorithm_1(steps=50, alpha=0.1, start_m=0.0):
 
 # --- Experiment 2: Conjectural Variations (Policy Space) ---
 def run_algorithm_2(iterations=10):
-    # Start with Machine Policy Slope L_M = 0 (equivalent to Nash policy)
-    L_M = 0.0
+    # Start with Policy Slope
+    L_M = 1.0
     [cite_start]delta = 0.05 # Perturbation size [cite: 531]
     history = []
     
