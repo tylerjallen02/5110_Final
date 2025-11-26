@@ -13,33 +13,21 @@ def run_game():
     print("Starting Experiment 1...")
     ai_1 = AI_Exp1(alpha=0.3)
     # This runs one long round (40s)
-    run_round(1, 40, ai_1, "Exp1_Continuous")
+    # run_round(1, 600, ai_1, "Exp1")
 
+
+    MINI_ROUND_FRAMES = 5 * 60
+    MINI_ROUNDS = 10
     # --- Experiment 2: Conjectural Variations (Policy Space) ---
     print("Starting Experiment 2...")
-    ai_2 = AI_Exp2()
+    ai_2 = AI_Exp2(MINI_ROUND_FRAMES)
     # This runs 10 PAIRS (20 trials total)
-    for i in range(10): 
-        # Trial 1: Nominal
-        run_round(2, 20, ai_2, f"Exp2_Pair{i}_Nominal")
-        ai_2.finish_trial()
+    # run_round(2, MINI_ROUND_FRAMES * MINI_ROUNDS * 2, ai_2, "Exp2")
         
-        # Trial 2: Perturbed
-        run_round(2, 20, ai_2, f"Exp2_Pair{i}_Perturbed")
-        ai_2.finish_trial() # Learning happens now
-
     # --- Experiment 3: Policy Gradient (Policy Space) ---
     print("Starting Experiment 3...")
-    ai_3 = AI_Exp3(gamma=2.0)
-    # This runs 10 PAIRS (20 trials total)
-    for i in range(10):
-        # Trial 1: Nominal
-        run_round(3, 20, ai_3, f"Exp3_Pair{i}_Nominal")
-        ai_3.finish_trial()
-        
-        # Trial 2: Perturbed
-        run_round(3, 20, ai_3, f"Exp3_Pair{i}_Perturbed")
-        ai_3.finish_trial() # Learning happens now
+    ai_3 = AI_Exp3(MINI_ROUND_FRAMES, gamma=2.0)
+    run_round(3, MINI_ROUND_FRAMES * MINI_ROUNDS * 2, ai_3, "Exp3")
     
 def run_round(round_num, duration, ai_agent, log_label=""):
     """
@@ -48,7 +36,7 @@ def run_round(round_num, duration, ai_agent, log_label=""):
 
     Args:
       round_num: The round number to display between rounds
-      duration: length of the round in seconds
+      duration: length of the round in frames (approx duration / 60 seconds)
     """
     pygame.init()
     clock = pygame.time.Clock()
@@ -57,13 +45,12 @@ def run_round(round_num, duration, ai_agent, log_label=""):
     pygame.display.set_caption("Keep the Rectangle Low")
     exit = False
 
-    n_frames = duration * 60
-    database = DataBase(n_frames)
+    database = DataBase(duration)
     
     FPS = 60
     countdown(canvas, clock, round_num)
     # force the correct number of collection points, even if it runs slower
-    for frame in range(n_frames):
+    for frame in range(duration):
         clock.tick(FPS)
 
         # 1. Get Human Input

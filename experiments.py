@@ -1,4 +1,6 @@
 import statistics
+
+from pygame.display import set_caption
 import cost
 
 # ==========================================
@@ -41,8 +43,9 @@ class AI_Exp2:
     """
     Experiment 2: Conjectural Variation.
     """
-    def __init__(self):
+    def __init__(self, mini_round_frames):
         # Initial Policy Slope: Nash Best Response
+        self.mini_round_frames = mini_round_frames
         self.L_M = -cost.BM / cost.AM 
         self.delta = 0.05 
         self.is_perturbed = False 
@@ -59,6 +62,8 @@ class AI_Exp2:
     def store_frame(self, h, m):
         self.history_h.append(h)
         self.history_m.append(m)
+        if len(self.history_h) >= self.mini_round_frames:
+            self.finish_trial()
 
     def finish_trial(self):
         avg_h = statistics.mean(self.history_h) if self.history_h else 0
@@ -88,7 +93,8 @@ class AI_Exp3:
     """
     Experiment 3: Policy Gradient.
     """
-    def __init__(self, gamma=2.0):
+    def __init__(self, mini_round_frames, gamma=2.0):
+        self.mini_round_frames = mini_round_frames
         self.L_M = -cost.BM / cost.AM 
         self.Delta = 0.05  
         self.gamma = gamma
@@ -106,10 +112,13 @@ class AI_Exp3:
     def store_frame(self, h, m):
         self.history_h.append(h)
         self.history_m.append(m)
-
+        if len(self.history_h) >= self.mini_round_frames:
+            self.finish_trial()
+            
     def finish_trial(self):
         avg_h = statistics.mean(self.history_h) if self.history_h else 0
         avg_m = statistics.mean(self.history_m) if self.history_m else 0
+
         self.history_h, self.history_m = [], []
 
         curr_cost = cost.get_machine_cost(avg_h, avg_m)
