@@ -1,3 +1,11 @@
+# Human Cost Parameters
+AH, BH, DH = 1.0, -1.0/3.0, 7.0/15.0
+hH, mH = 0.1, 0.7
+
+# Machine Cost Parameters
+AM, BM, DM = 1.0, -1.0, 2.0
+hM, mM = 0.0, 0.0
+
 def get_human_cost(human_input, machine_input):
     """
     Calculates human cost from 3D quadratic equation
@@ -13,11 +21,16 @@ def get_human_cost(human_input, machine_input):
     # dummy function should be replaced with actual equation
 
     # It may be worth adding 12/125 
-    return (1 / 2) * human_input ** 2 \
+    # Calculate the raw cost
+    val = (1 / 2) * human_input ** 2 \
         + (7 / 30)  * machine_input ** 2 \
         - (1/3) * human_input * machine_input \
         + (2 / 15) * human_input  \
         - (22/ 75) * machine_input
+        
+    # FIX: Add the offset (+ 12/125) AND max(0) safety check
+    # This ensures game_gui.py never crashes on math.sqrt()
+    return max(0.0, val + (12/125))
 
 def get_machine_cost(human_input, machine_input):
     """
@@ -32,3 +45,11 @@ def get_machine_cost(human_input, machine_input):
     return (1 / 2) * machine_input ** 2 \
         + human_input ** 2 \
         - human_input * machine_input
+        
+def get_machine_gradient(h, m):
+    """
+    Analytic Gradient of Machine Cost w.r.t 'm'.
+    Used for Experiment 1 (Gradient Descent).
+    d(c_M)/dm = AM*(m-mM) + BM*(h-hM)
+    """
+    return AM * (m - mM) + BM * (h - hM)

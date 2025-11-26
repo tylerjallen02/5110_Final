@@ -1,91 +1,127 @@
+import statistics
 import cost
 
-# --- Experiment 1: Gradient Descent in Action Space ---
-def run_algorithm_1(steps=50, alpha=0.1, start_m=0.0):
-    m = start_m
-    history = []
-    
-    for _ in range(steps):
-        # 1. FIX: Call the best response function, not the cost function
-        h = cost.get_human_cost(m)
-        
-        # 2. Record state
-        history.append((h, m))
-        
-        # 3. Machine updates action directly
-        # Eq (3): m = m - alpha * d(c_M)/dm
-        grad = cost.get_machine_cost(h, m)
-        m = m - (alpha * grad)
-        
-    return history
+# ==========================================
+#               AI AGENT CLASSES
+# ==========================================
 
-# --- Experiment 2: Conjectural Variations (Policy Space) ---
-def run_algorithm_2(iterations=10):
-    # Start with Policy Slope
-    L_M = 1.0
-    [cite_start]delta = 0.05 # Perturbation size [cite: 531]
-    history = []
-    
-    for _ in range(iterations):
-        # Solve for equilibrium (h, m) given the policy constraint m = L_M * h
+class AI_Exp1:
+    """
+    Experiment 1: Gradient Descent in Action Space.
+    Updates m continuously every frame based on gradient.
+    """
+    def __init__(self, alpha=0.3):
+        self.m = -0.2  # Start near Nash
+        self.alpha = alpha
+        # DEBUG: Counter to print info every second
+        self.frame_count = 0
+
+    def get_action(self, human_h):
+        # Calculate gradient d(c_M)/dm
+        grad = cost.get_machine_gradient(human_h, self.m)
         
-        # Trial 1: Nominal Policy
-        denominator = (1 - L_M/3)
-        if abs(denominator) < 1e-9: denominator = 1e-9 # Avoid div/0
+        # Update State: m = m - alpha * grad
+        self.m = self.m - (self.alpha * grad)
         
-        h1 = (-2/15) / denominator
-        m1 = L_M * h1
+        # Clamp to screen bounds [-1, 1]
+        self.m = max(-1.0, min(1.0, self.m))
         
-        # Trial 2: Perturbed Policy (m = L_M*h + delta)
-        h2 = (delta/3 - 2/15) / denominator
-        m2 = L_M * h2 + delta
-        
-        # Algorithm Step: Estimate Human's Response Slope (L_H_tilde)
-        # Eq (5)
-        diff_m = m2 - m1
-        if abs(diff_m) < 1e-9: diff_m = 1e-9
-        L_H_tilde = (h2 - h1) / diff_m
-        
-        # Algorithm Step: Update Machine Policy L_M
-        # Eq (6a)
-        if abs(1 - L_H_tilde) > 1e-9:
-            L_M = (1 - 2 * L_H_tilde) / (1 - L_H_tilde)
+        # --- DEBUG PRINT ---
+        self.frame_count += 1
+        # Print every 30 frames (0.5 seconds)
+        if self.frame_count % 30 == 0:
+            print(f"[Exp1] Human: {human_h:.2f} | Machine Reacting: {self.m:.2f}")
             
-        history.append((h1, m1))
-        
-    return history
+        return self.m
 
-# --- Experiment 3: Policy Gradient (Policy Space) ---
-def run_algorithm_3(iterations=10, gamma=2.0):
-    # Start with Policy Slope L_M = 0
-    L_M = 0.0
-    [cite_start]Delta = 0.05 # Perturbation to the SLOPE [cite: 531]
-    history = []
+    def finish_trial(self):
+        pass 
+
+class AI_Exp2:
+    """
+    Experiment 2: Conjectural Variation.
+    """
+    def __init__(self):
+        # Initial Policy Slope: Nash Best Response
+        self.L_M = -cost.BM / cost.AM 
+        self.delta = 0.05 
+        self.is_perturbed = False 
+        
+        self.history_h = []
+        self.history_m = []
+        self.prev_avg_h = 0.0
+        self.prev_avg_m = 0.0
+
+    def get_action(self, human_h):
+        d = self.delta if self.is_perturbed else 0.0
+        return self.L_M * (human_h - cost.hM) + cost.mM + d
+
+    def store_frame(self, h, m):
+        self.history_h.append(h)
+        self.history_m.append(m)
+
+    def finish_trial(self):
+        avg_h = statistics.mean(self.history_h) if self.history_h else 0
+        avg_m = statistics.mean(self.history_m) if self.history_m else 0
+        self.history_h, self.history_m = [], [] 
+
+        if not self.is_perturbed:
+            self.prev_avg_h = avg_h
+            self.prev_avg_m = avg_m
+            self.is_perturbed = True
+            print(f"  -> [Exp2] Trial A (Nominal) Done.")
+        else:
+            self.is_perturbed = False
+            
+            denom = (avg_m - self.prev_avg_m)
+            if abs(denom) < 1e-9: denom = 1e-9
+            L_H = (avg_h - self.prev_avg_h) / denom
+
+            denom_pol = (cost.AM + L_H * cost.BM)
+            if abs(denom_pol) < 1e-9: denom_pol = 1e-9
+            self.L_M = -(cost.BM + L_H * cost.DM) / denom_pol
+            
+            # DEBUG PRINT
+            print(f"  -> [Exp2] LEARNING: Updated Policy Slope to: {self.L_M:.3f}")
+
+class AI_Exp3:
+    """
+    Experiment 3: Policy Gradient.
+    """
+    def __init__(self, gamma=2.0):
+        self.L_M = -cost.BM / cost.AM 
+        self.Delta = 0.05  
+        self.gamma = gamma
+        self.is_perturbed = False
+        
+        self.history_h = []
+        self.history_m = []
+        self.cost_trial_1 = 0.0
+
+    def get_action(self, human_h):
+        D = self.Delta if self.is_perturbed else 0.0
+        slope = self.L_M + D
+        return slope
     
-    for _ in range(iterations):
-        # Trial 1: Nominal Policy m = L_M * h
-        denom1 = (1 - L_M/3)
-        if abs(denom1) < 1e-9: denom1 = 1e-9
-        h1 = (-2/15) / denom1
-        m1 = L_M * h1
-        cost1 = cost.get_machine_cost(h1, m1)
-        
-        # Trial 2: Perturbed Slope m = (L_M + Delta) * h
-        L_M_new = L_M + Delta
-        denom2 = (1 - L_M_new/3)
-        if abs(denom2) < 1e-9: denom2 = 1e-9
-        h2 = (-2/15) / denom2
-        m2 = L_M_new * h2
-        cost2 = cost.get_machine_cost(h2, m2)
-        
-        # Algorithm Step: Estimate Policy Gradient
-        # Eq (9)
-        gradient = (cost2 - cost1) / Delta
-        
-        # Algorithm Step: Update Slope L_M
-        # Eq (10)
-        L_M = L_M - (gamma * gradient)
-        
-        history.append((h1, m1))
-        
-    return history
+    def store_frame(self, h, m):
+        self.history_h.append(h)
+        self.history_m.append(m)
+
+    def finish_trial(self):
+        avg_h = statistics.mean(self.history_h) if self.history_h else 0
+        avg_m = statistics.mean(self.history_m) if self.history_m else 0
+        self.history_h, self.history_m = [], []
+
+        curr_cost = cost.get_machine_cost(avg_h, avg_m)
+
+        if not self.is_perturbed:
+            self.cost_trial_1 = curr_cost
+            self.is_perturbed = True
+            print(f"  -> [Exp3] Trial A Cost: {curr_cost:.4f}")
+        else:
+            self.is_perturbed = False
+            gradient = (curr_cost - self.cost_trial_1) / self.Delta
+            self.L_M = self.L_M - (self.gamma * gradient)
+            
+            # DEBUG PRINT
+            print(f"  -> [Exp3] LEARNING: Updated Policy Slope to: {self.L_M:.3f}")
