@@ -109,7 +109,7 @@ class AI_Exp3:
     def get_action(self, human_h):
         D = self.Delta if self.is_perturbed else 0.0
         slope = self.L_M + D
-        return slope * (human_h - hM) + mMhhi
+        return slope * (human_h - hM) + mM
     
     def store_frame(self, h, m):
         self.history_h.append(h)

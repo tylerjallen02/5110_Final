@@ -13,20 +13,20 @@ def run_game():
     print("Starting Experiment 1...")
     ai_1 = AI_Exp1(alpha=0.3)
     # This runs one long round (40s)
-    # run_round(1, 600, ai_1, "Exp1")
+    run_round(1, 600, ai_1, "Exp1")
 
 
-    MINI_ROUND_FRAMES = 5 * 60
+    MINI_ROUND_FRAMES = 3 * 60
     MINI_ROUNDS = 10
     # --- Experiment 2: Conjectural Variations (Policy Space) ---
     print("Starting Experiment 2...")
     ai_2 = AI_Exp2(MINI_ROUND_FRAMES)
     # This runs 10 PAIRS (20 trials total)
-    # run_round(2, MINI_ROUND_FRAMES * MINI_ROUNDS * 2, ai_2, "Exp2")
+    run_round(2, MINI_ROUND_FRAMES * MINI_ROUNDS * 2, ai_2, "Exp2")
         
     # --- Experiment 3: Policy Gradient (Policy Space) ---
     print("Starting Experiment 3...")
-    ai_3 = AI_Exp3(MINI_ROUND_FRAMES, gamma=2.0)
+    ai_3 = AI_Exp3(MINI_ROUND_FRAMES, gamma=1.0)
     run_round(3, MINI_ROUND_FRAMES * MINI_ROUNDS * 2, ai_3, "Exp3")
     
 def run_round(round_num, duration, ai_agent, log_label=""):
