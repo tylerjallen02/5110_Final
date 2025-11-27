@@ -3,6 +3,8 @@ import statistics
 from pygame.display import set_caption
 import cost
 
+from cost import hM, mM, BM, AM, DM
+
 # ==========================================
 #               AI AGENT CLASSES
 # ==========================================
@@ -107,7 +109,7 @@ class AI_Exp3:
     def get_action(self, human_h):
         D = self.Delta if self.is_perturbed else 0.0
         slope = self.L_M + D
-        return slope
+        return slope * (human_h - hM) + mMhhi
     
     def store_frame(self, h, m):
         self.history_h.append(h)
