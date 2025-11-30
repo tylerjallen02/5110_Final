@@ -38,7 +38,8 @@ def run_round(round_num, duration, ai_agent, log_label=""):
       round_num: The round number to display between rounds
       duration: length of the round in frames (approx duration / 60 seconds)
     """
-    pygame.init()
+    pygame.display.init()
+    pygame.font.init()
     clock = pygame.time.Clock()
     BACKGROUND_COLOR = (200, 200, 200)
     canvas = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
