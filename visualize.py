@@ -65,7 +65,8 @@ def plot_experiment_1():
 
 def plot_learning_experiments(round_num, title, filename):
     print(f"Visualizing {title}...")
-    files = glob.glob(f"data/round_{round_num}_Exp{round_num}/*.npz")
+    # for tyler: Change path as needed (data1 to data)
+    files = glob.glob(f"data1/round_{round_num}_Exp{round_num}/*.npz")
     if not files:
         print(f"  No data found for Round {round_num}.")
         return
@@ -86,7 +87,7 @@ def plot_learning_experiments(round_num, title, filename):
 
     # 2. Trim to shortest length to average them
     trimmed_costs = [c[:min_len] for c in all_costs]
-    avg_cost = np.mean(trimmed_costs, axis=0)
+    avg_cost = np.median(trimmed_costs, axis=0)
     
     # 3. Apply Moving Average to smooth the noise
     window = 100
@@ -114,6 +115,7 @@ def plot_learning_experiments(round_num, title, filename):
 
 if __name__ == "__main__":
     plot_experiment_1()
+    plot_learning_experiments(1, "Experiment 1 (Nash Equilibrium)", "results_exp1_learning.png")   
     plot_learning_experiments(2, "Experiment 2 (Conjectural Variations)", "results_exp2.png")
     plot_learning_experiments(3, "Experiment 3 (Policy Gradient)", "results_exp3.png")
     print("Done!")
