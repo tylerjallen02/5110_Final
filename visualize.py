@@ -71,9 +71,10 @@ def plot_learning_experiments(round_num, title, filename):
         print(f"  No data found for Round {round_num}.")
         return
 
-    plt.figure(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(12, 6))
     
     all_costs = []
+    all_human_costs = []
     min_len = float('inf')
 
     # 1. Load all files
@@ -81,36 +82,57 @@ def plot_learning_experiments(round_num, title, filename):
         data = np.load(f)
         # We care about Machine Cost (optimizing its objective)
         c_m = data['machine_scores']
+        c_h = data['human_scores']
         all_costs.append(c_m)
+        all_human_costs.append(c_h)
         if len(c_m) < min_len:
             min_len = len(c_m)
+        if len(c_h) < min_len:
+            min_len = len(c_h)
 
     # 2. Trim to shortest length to average them
     trimmed_costs = [c[:min_len] for c in all_costs]
+    trimmed_human = [c[:min_len] for c in all_human_costs]
     avg_cost = np.median(trimmed_costs, axis=0)
+    avg_human = np.median(trimmed_human, axis=0)
     
     # 3. Apply Moving Average to smooth the noise
     window = 100
     if min_len > window:
         smooth_avg = np.convolve(avg_cost, np.ones(window)/window, mode='valid')
+        smooth_human = np.convolve(avg_human, np.ones(window)/window, mode='valid')
         time_axis = np.arange(len(smooth_avg))
     else:
         smooth_avg = avg_cost
+        smooth_human = avg_human
         time_axis = np.arange(len(smooth_avg))
 
     # 4. Plot individual runs (lightly) and average (bold)
     # for c in trimmed_costs:
     #     # Plot a subset of raw data or just the background noise
-    #     plt.plot(c, color='gray', alpha=0.05)
-        
-    plt.plot(time_axis, smooth_avg, color='red', linewidth=2, label="Average Machine Cost")
+    #     ax.plot(c, color='gray', alpha=0.05)
 
-    plt.title(f"{title}: Cost Reduction Over Time")
-    plt.xlabel("Time (Frames)")
-    plt.ylabel("Machine Cost ($c_M$)")
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.savefig(filename)
+    # Machine cost on primary y-axis
+    ax.plot(time_axis, smooth_avg, color='red', linewidth=2, label="Average Machine Cost")
+    ax.set_title(f"{title}: Cost Reduction Over Time")
+    ax.set_xlabel("Time (Frames)")
+    ax.set_ylabel("Machine Cost ($c_M$)", color='red')
+    ax.tick_params(axis='y', colors='red')
+
+    # Human cost on secondary y-axis
+    ax2 = ax.twinx()
+    ax2.plot(time_axis, smooth_human, color='blue', linewidth=2, label="Average Human Cost")
+    ax2.set_ylabel("Human Cost ($c_H$)", color='blue')
+    ax2.tick_params(axis='y', colors='blue')
+
+    # Combine legends from both axes
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2, loc='best')
+
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(filename)
     print(f"  -> Saved {filename}")
 
 if __name__ == "__main__":
